@@ -43,6 +43,9 @@ XPU 入口把参数映射到 `gem5_axi/configs/run_xpu.py`，默认值对应基�
 | `XPU_MAX_TICKS` | `20000000000000` | 单个 gem5 样例最大 tick 数 |
 | `XPU_REPLAY` | `0` | 置为 `1` 时启用链路 replay 参数 |
 
+`XPU_NUM_CPUS` 建议设置为 2 或更高；`XPU_SLOW_MEMSIM_SCALE` 设置为大于
+`XPU_MEMSIM_SCALE` 的整数倍，`summary.json` 的 `memory_feedback.scale` 会记录实际比例。
+
 例如，使用 8 个主机 CPU 上下文、把普通 XPU 样例放慢为 2 倍、把慢速对照组设为 8 倍，并打开 replay：
 
 ```bash
