@@ -1,0 +1,24 @@
+services:
+  storagestacked:
+    image: ${SS_IMAGE:-storagestacked:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        AXI_JOBS: ${AXI_JOBS:-6}
+    environment:
+      SS_ROOT: /opt/StorageStacked
+      SS_DEPS_ROOT: /opt/deps
+      SS_RESULTS_ROOT: /results
+      SS_XPU_LD_PRELOAD: /opt/deps/toolchain/lib/libstdc++.so.6:/opt/deps/toolchain/lib/libgcc_s.so.1
+      XPU_NUM_CPUS: ${XPU_NUM_CPUS:-4}
+      XPU_MEMSIM_SCALE: ${XPU_MEMSIM_SCALE:-1}
+      XPU_SLOW_MEMSIM_SCALE: ${XPU_SLOW_MEMSIM_SCALE:-4}
+      XPU_MAX_TICKS: ${XPU_MAX_TICKS:-20000000000000}
+      XPU_REPLAY: ${XPU_REPLAY:-0}
+    volumes:
+      - ${SS_RESULTS_DIR:-./results/docker}:/results
+    init: true
+    stdin_open: true
+    tty: true
