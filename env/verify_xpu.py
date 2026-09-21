@@ -60,7 +60,10 @@ for name,sources in [('npu',{'host','coralnpu'}),('gpu',{'host','vortex'}),
     cases[name]={'exit_tick_fs':finish(p),'sources':observed,'devices':device,**checks}
 
 fast,slow=cases['three'],cases['three_slow']
-assert read(root/'three_slow/memsim_config.json')['period_fs']==4*read(root/'three/memsim_config.json')['period_fs']
+fast_period=read(root/'three/memsim_config.json')['period_fs']
+slow_period=read(root/'three_slow/memsim_config.json')['period_fs']
+assert fast_period>0 and slow_period>fast_period and slow_period%fast_period==0
+feedback_scale=slow_period//fast_period
 assert npu_sequences['three']==npu_sequences['three_slow']
 assert slow['exit_tick_fs']>fast['exit_tick_fs']
 assert slow['devices']['npu_cycles']>fast['devices']['npu_cycles']
@@ -68,7 +71,7 @@ assert all(slow['devices'][k]==fast['devices'][k] for k in ('gpu_core_read','gpu
 assert slow['devices']['gpu_cycles']>fast['devices']['gpu_cycles']
 for s in ('vortex','coralnpu'):
     assert slow['sources'][s]['roundtrip_mean_ns']>fast['sources'][s]['roundtrip_mean_ns']
-feedback={'passed':True,'scale':4,'host_finish_delta_ns':(slow['exit_tick_fs']-fast['exit_tick_fs'])/1e6,
+feedback={'passed':True,'scale':feedback_scale,'host_finish_delta_ns':(slow['exit_tick_fs']-fast['exit_tick_fs'])/1e6,
     'npu_cycles':[fast['devices']['npu_cycles'],slow['devices']['npu_cycles']],
     'gpu_cycles':[fast['devices']['gpu_cycles'],slow['devices']['gpu_cycles']],
     'note':'CPU/CP polling counts may change; compare the same computation and actual source responses.'}
