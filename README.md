@@ -23,6 +23,17 @@ cd StorageStacked-Docker
 最后运行 **CPU / 在线 mem_sim 七组闭环验收**。终端出现 `初始化成功` 表示这些步骤均通过。
 GPU/NPU 库的加载检查包含在初始化中，完整计算验收另运行 `./run.sh xpu`。
 
+如果客户已经 clone 过旧版本，不需要重新下载整个仓库；在原目录执行：
+
+```bash
+cd StorageStacked-Docker
+git pull --ff-only origin main
+git rev-parse --short HEAD
+```
+
+确认版本为 `9de6491` 后，再按下文导入 `ubuntu-20.04.tar` 并运行 `./run.sh setup`。
+如果 `git pull` 提示本地有未提交修改，应先备份或处理这些修改，再继续更新。
+
 **首次准备需要联网，下载和编译可能需要数十分钟到数小时。**需要能访问 Docker Hub、Ubuntu 软件源、
 GitHub、conda-forge 和 Bazel 依赖站点；后续运行复用镜像。网络受限时使用下文的离线镜像方式。
 失败时先处理终端显示的错误，再重跑同一条命令；已完成的镜像层会复用，失败不会显示初始化成功。
