@@ -35,6 +35,34 @@ Dockerfile 会按三个 revision 参数克隆外部仓库的固定提交，再�
 Dockerfile 将源码/编译层与根目录 README、客户启动脚本和 `docs/` 的复制分开，
 只修改这些使用说明或入口时可复用昂贵的模型编译层。
 
+### 内网镜像站证书错误
+
+如果出现 `x509: certificate is valid for ... not docker...`，通常是内网网关替换了 Docker
+镜像站证书。不要关闭 Docker TLS 校验。可在联网机器导出本项目的 Ubuntu 基础镜像：
+
+```bash
+docker pull ubuntu:20.04
+docker save -o ubuntu-20.04.tar ubuntu:20.04
+```
+
+将文件传到目标机后，在仓库根目录导入并保持默认标签：
+
+```bash
+docker load --input ubuntu-20.04.tar
+docker image inspect ubuntu:20.04 --format '{{.Id}}'
+./run.sh setup
+```
+
+Dockerfile 支持通过 `SS_BASE_IMAGE` 指定其他本地标签，例如：
+
+```bash
+SS_BASE_IMAGE=ubuntu:20.04-local ./run.sh setup
+```
+
+导入基础镜像只能绕过 Docker Hub 这一层；构建仍需访问 Ubuntu 软件源、GitHub、conda-forge
+和 Bazel 依赖站点。若这些地址也不可达，应交付已构建的完整 `storagestacked:local` 镜像，
+按根目录 README 的“离线镜像交付”操作。
+
 四个组件的源码准备命令、各编译阶段和产物位置见[构建与运行全流程](../docs/build-run.md)。
 整体设计、设备协同和新增设备分别见[架构](../docs/architecture.md)、
 [协同机制](../docs/multi-device.md)、[XPU 接入](../docs/xpu-integration.md)。
@@ -99,6 +127,7 @@ Python HTTP 服务来自镜像，宿主机无需安装 Python。交接需复制�
 | Docker 服务不可用或无权访问 | 启动 Docker，并让当前用户能够执行 `docker info` 后重试 |
 | 缺少 Compose v2 | 按 Docker 官方安装说明安装 Compose 插件；本入口不使用旧 `docker-compose` |
 | 平台不是 Linux x86-64 | 使用 x86-64 Linux 主机或 WSL2 的 Linux Docker 环境 |
+| `x509` 证书域名与镜像站不匹配 | 按上文导入 `ubuntu:20.04` 基础镜像；不要关闭 TLS 校验；若其他下载地址也被拦截，改用完整离线镜像 |
 | 下载超时/连接失败 | 检查 Docker Hub、Ubuntu、GitHub 和依赖站点的网络；网络受限时加载交付方准备的完整镜像 |
 | 编译进程被系统杀死 | 检查内存/磁盘；`AXI_JOBS=2 ./run.sh setup` 可减少 gem5/mem_sim 并发，Vortex/Bazel 并发另见构建文档 |
 | 更新源码后行为没有变化 | 执行 `./run.sh setup` 重建并验收；日常样例命令复用已有镜像 |

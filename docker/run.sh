@@ -21,6 +21,7 @@ StorageStacked 客户入口（在仓库根目录运行）
 
 默认结果：results/docker/；用 SS_RESULTS_DIR 修改。
 默认镜像：storagestacked:local；用 SS_IMAGE 修改。
+基础镜像：ubuntu:20.04；用 SS_BASE_IMAGE 指定本地导入的等价标签。
 查看端口：8000；用 SS_VIEW_PORT 修改。
 第一次 setup 需要联网下载并编译，后续运行复用镜像。
 EOF

@@ -27,6 +27,36 @@ GPU/NPU 库的加载检查包含在初始化中，完整计算验收另运行 `.
 GitHub、conda-forge 和 Bazel 依赖站点；后续运行复用镜像。网络受限时使用下文的离线镜像方式。
 失败时先处理终端显示的错误，再重跑同一条命令；已完成的镜像层会复用，失败不会显示初始化成功。
 
+### 内网证书拦截时导入 Ubuntu 基础镜像
+
+如果 Docker 报 `x509: certificate is valid for ... not docker...`，说明 Docker 服务访问镜像站时被
+内网网关替换了证书。不要关闭 TLS 校验，也不要把该镜像站加入不安全仓库；可以在一台能够正常访问
+Docker Hub 的机器上先导出基础镜像：
+
+```bash
+docker pull ubuntu:20.04
+docker save -o ubuntu-20.04.tar ubuntu:20.04
+```
+
+把 `ubuntu-20.04.tar` 传到内网服务器的仓库目录后，在仓库根目录执行：
+
+```bash
+docker load --input ubuntu-20.04.tar
+docker image inspect ubuntu:20.04 --format '{{.Id}}'
+./run.sh setup
+```
+
+导入后的标签必须是 `ubuntu:20.04`。如果保留了其他本地标签，可以直接指定它：
+
+```bash
+SS_BASE_IMAGE=ubuntu:20.04-local ./run.sh setup
+```
+
+这个方法只绕过 Docker Hub 基础镜像这一层；`setup` 后续仍需要从 Ubuntu 软件源、GitHub、conda-forge
+和 Bazel 依赖站点下载。如果内网同时阻断这些地址，请在联网机器构建并验收完整的
+`storagestacked:local` 镜像，再按[离线镜像交付](#离线镜像交付)导出、导入；不要在内网关闭 Docker
+TLS 证书校验。
+
 ## 日常使用
 
 以下命令均在仓库根目录执行：

@@ -1,6 +1,9 @@
-ARG UBUNTU_VERSION=20.04
+# Keep the base image configurable so an air-gapped or certificate-inspecting
+# Docker daemon can use a locally imported tag without changing the build
+# sources. The default remains the pinned Ubuntu 20.04 tag.
+ARG UBUNTU_IMAGE=ubuntu:20.04
 
-FROM ubuntu:${UBUNTU_VERSION} AS builder
+FROM ${UBUNTU_IMAGE} AS builder
 
 ARG AXI_JOBS=6
 ARG GEM5_REV=c8222cc67a399bfc01e8658dd14b30d5bfd634f9
@@ -72,7 +75,7 @@ RUN useradd --create-home --uid 1000 ssbuild \
 USER ssbuild
 RUN bash env/build_xpu.sh
 
-FROM ubuntu:${UBUNTU_VERSION} AS runtime
+FROM ${UBUNTU_IMAGE} AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=UTC \
