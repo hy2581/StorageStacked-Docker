@@ -1,75 +1,108 @@
 # StorageStacked Docker 交付仓库
 
-这个仓库提供 StorageStacked 的可复现 Docker 交付方式。对接方克隆仓库后，通过一个镜像获得固定版本的 gem5、CoralNPU、Vortex、mem_sim 和项目编译产物，然后直接运行 CPU/mem_sim、XPU 和 LLM 访存样例。
+克隆本仓库后，使用 `./run.sh` 完成环境准备和样例运行。固定版本的 gem5、CoralNPU、
+Vortex、mem_sim、编译器和运行依赖均在 Docker 镜像中准备，宿主机无需另装模型工具链。
 
 ## 快速开始
 
-环境只需要 Linux x86-64、Docker Engine 和 Docker Compose v2。首次构建会从锁定版本下载外部依赖并编译完整镜像：
+先准备 **Linux x86-64（或 Windows 的 WSL2 Linux 环境）、Git、Docker Engine 和
+Compose v2**，确保当前终端能执行 `docker info` 和 `docker compose version`。
+Docker 安装可参考[官方说明](https://docs.docker.com/engine/install/ubuntu/)。
+建议运行 Docker 的 Linux 环境具备 32 GiB 内存、100 GiB 可用磁盘；
+无需物理 GPU、Vivado 或宿主机 SystemC。
+
+然后只需三条命令（Windows 用户在 WSL2 终端执行）：
 
 ```bash
-git clone https://github.com/fmq03/StorageStacked-Docker.git
+git clone https://github.com/hy2581/StorageStacked-Docker.git
 cd StorageStacked-Docker
-docker compose build
+./run.sh setup
 ```
 
-构建完成后运行三组入口：
+`setup` 自动检查 Docker、下载三份锁定的外部源码、安装依赖、编译完整镜像、检查设备库，
+最后运行 **CPU / 在线 mem_sim 七组闭环验收**。终端出现 `初始化成功` 表示这些步骤均通过。
+GPU/NPU 库的加载检查包含在初始化中，完整计算验收另运行 `./run.sh xpu`。
+
+**首次准备需要联网，下载和编译可能需要数十分钟到数小时。**需要能访问 Docker Hub、Ubuntu 软件源、
+GitHub、conda-forge 和 Bazel 依赖站点；后续运行复用镜像。网络受限时使用下文的离线镜像方式。
+失败时先处理终端显示的错误，再重跑同一条命令；已完成的镜像层会复用，失败不会显示初始化成功。
+
+## 日常使用
+
+以下命令均在仓库根目录执行：
+
+| 命令 | 内容 |
+|---|---|
+| `./run.sh memsim` | CPU、AXI256、UCIe、在线 mem_sim 七组样例 |
+| `./run.sh xpu` | NPU、GPU、Host/GPU/NPU 三源及慢速内存四组计算验收 |
+| `./run.sh llm` | 小规模 LLM 合成访存样例，默认 533 条请求；不运行真实 LLM 数值计算 |
+| `./run.sh all` | 顺序运行 CPU 和 XPU 套件，不含 LLM |
+| `./run.sh view` | 在浏览器中查看结果，打开 <http://localhost:8000>；Ctrl+C 停止 |
+| `./run.sh check` | 检查镜像内源码版本、编译产物、动态库加载和 SystemC 依赖 |
+| `./run.sh doctor` | 检查 Docker 环境 |
+
+结果保存在宿主机 `results/docker/`，每次运行新建带时间戳的目录，保留汇总、日志、
+AXI 波形和 Flit 记录。首次验收位于 `setup-*/check/` 和 `setup-*/memsim/`；
+CPU/XPU 看 `summary.json`，LLM 看 `summary.md`。运行 `view` 后选择结果目录中的
+`trace_view.html`（链路）或 `memsim_view.html`（内存时序）；交接结果时复制整个目录，
+保留所有 `*_data/` 目录及 `view_store.js`。
+
+可选配置：
 
 ```bash
-./docker/run.sh memsim
-./docker/run.sh xpu
-./docker/run.sh llm --hidden-size 32 --layers 1 --context-tokens 4 --decode-tokens 1 --request-bytes 64
+# 指定结果保存位置；查看时使用相同的 SS_RESULTS_DIR
+SS_RESULTS_DIR="$HOME/storagestacked-results" ./run.sh xpu
+SS_RESULTS_DIR="$HOME/storagestacked-results" SS_VIEW_PORT=8080 ./run.sh view
+
+# 更新仓库源码后，重新构建并验收
+./run.sh setup
 ```
 
-结果默认写到 `results/docker/`。完整的运行参数、XPU 参数修改方式、LLM 访存算子复现命令和结果核对表见：
+启动脚本会在镜像不存在时自动构建；镜像已存在时直接使用。更新源码后需要主动运行
+`./run.sh setup`，也可用 `./run.sh build` 仅构建。旧入口 `./docker/run.sh` 继续兼容。
+
+详细参数、排错和实验数据见：
 
 - [Docker 运行说明](docker/README.md)
 - [复现与参数操作指南](docker/REPRODUCTION.md)
 - [样例执行报告](docker/validation_report.md)
 
-## 常用命令
+## 离线镜像交付
+
+交付方在联网机器完成 `./run.sh setup` 后导出镜像，并连同本仓库一起交付：
 
 ```bash
-# 构建
-./docker/run.sh build
-
-# CPU / mem_sim 七组样例
-./docker/run.sh memsim
-
-# NPU、GPU、三源和慢速内存四组样例
-./docker/run.sh xpu
-
-# LLM 访存算子
-./docker/run.sh llm \
-  --hidden-size 64 --layers 2 \
-  --context-tokens 16 --decode-tokens 2 \
-  --request-bytes 64
-
-# 一次执行 CPU 和 XPU
-./docker/run.sh all
+mkdir -p dist
+docker save storagestacked:local | gzip > dist/storagestacked-local.tar.gz
 ```
 
-## XPU 参数
-
-XPU 参数通过 Compose 环境变量修改，默认配置直接对应报告中的验收样例：
+客户在仓库根目录导入，然后直接检查和运行：
 
 ```bash
-XPU_NUM_CPUS=8 \
-XPU_MEMSIM_SCALE=2 \
-XPU_SLOW_MEMSIM_SCALE=8 \
-XPU_REPLAY=1 \
-./docker/run.sh xpu
+docker load < /path/to/storagestacked-local.tar.gz
+./run.sh check
+./run.sh memsim
+./run.sh view
 ```
 
-参数含义和可复现实例见 [复现与参数操作指南](docker/REPRODUCTION.md#3-修改-xpu-参数并复现)。
+加载好的镜像已包含源码、依赖和编译产物，样例可离线运行。离线机器无需运行 `setup`，
+因为该命令始终请求构建。镜像和大体积结果不随 Git 分发。
 
-## 镜像交付
+## 整体设计、构建与实验文档
 
-联网机器构建后可以导出镜像，目标机器导入后直接运行：
+以下文档对应当前 AXI256/UCIe/在线 mem_sim 闭环版本。`gem5_new/docs/` 中标为历史的
+9 月 8 日资料记录旧离线流程，不作为当前整机的构建和架构依据。
 
-```bash
-docker save storagestacked:local | gzip > storagestacked-local.tar.gz
-docker load < storagestacked-local.tar.gz
-./docker/run.sh memsim
-```
+| 阅读目的 | 文档 |
+|---|---|
+| 层级结构、模块职责、请求/响应、统一时间和反压 | [仿真器详细架构](docs/architecture.md) |
+| 四个组件的源码准备、Docker/原生编译、产物与排错 | [构建与运行全流程](docs/build-run.md) |
+| 实验设计、实测数据、指标定义、性能现象与优化方向 | [实验结果与分析](docs/experiments.md) |
+| Host 调度、GPU/NPU 启动、缓冲区交接与完整协同链路 | [多设备协同机制](docs/multi-device.md) |
+| 新设备的环境、ABI、gem5/存储链对接、调试与交付 | [新增 XPU 接入流程](docs/xpu-integration.md) |
 
-Dockerfile 使用 `env/sources.lock.json` 中的固定提交获取外部源码，项目普通源码与运行脚本随本仓库分发，便于按同一版本复现。
+历史所称“四个外部源码”中，mem_sim 现已随本仓库维护；需要另外获取的外部树为
+gem5、CoralNPU、Vortex。Docker 构建自动获取，原生开发的逐项命令见上述构建文档。
+
+Dockerfile 的三个 revision 参数与 `env/sources.lock.json` 保持一致，构建时再次检查实际
+源码版本。项目普通源码与运行脚本随本仓库分发，便于按同一版本复现。

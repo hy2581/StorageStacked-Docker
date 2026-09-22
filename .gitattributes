@@ -1,0 +1,7 @@
+# Keep Linux entrypoints, patches and lock files stable after a Windows checkout.
+*.sh text eol=lf
+*.py text eol=lf
+*.patch text eol=lf
+*.lock text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf

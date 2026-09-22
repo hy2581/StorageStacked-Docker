@@ -1,5 +1,10 @@
 # 从零新增 XPU 的接入流程
 
+> 历史方案：下文基于旧 upstream.lock、独立 Makefile 和 UnifiedTimingMemory 的接入方式。
+> 当前统一环境、Docker、在线存储链、来源扩展及分级验收的完整步骤见
+> [当前新增 XPU 接入流程](../../docs/xpu-integration.md)。新设备应接入原生 TLM/AXI/UCIe
+> 到在线 mem_sim，不按下文新增旧功能内存旁路。
+
 本页定义在当前框架中增加第四个设备 `myxpu` 的实施路径。目录名、ID 与地址示例用于说明
 新增工作，仓库目前没有 `MyXPU` 实现，也没有一个配置项能自动注册任意新设备。
 目标是保持现有 Host/Vortex/CoralNPU 回归通过，同时让新设备进入同一功能内存与统一观察点。

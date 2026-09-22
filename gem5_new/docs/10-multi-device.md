@@ -1,5 +1,9 @@
 # Host、Vortex 与 CoralNPU 协同机制
 
+> 历史文档：下文为独立子项目的功能内存与离线重放协同说明。
+> 当前 Host 调度、PIO/DMA、AXI256/UCIe/在线 mem_sim 数据交接及能力边界见
+> [当前多设备协同](../../docs/multi-device.md)。
+
 当前协同由 Host workload 显式编排，没有自动图分区器或跨设备统一任务调度器。
 真实三源回归执行 GPU vecadd 和 NPU 仿射变换；合成 LLM-like 流的任务划分是另一个访存实验，
 不表示这三个设备已经执行完整 Transformer。

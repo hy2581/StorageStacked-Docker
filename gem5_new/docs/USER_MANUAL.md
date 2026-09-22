@@ -6,6 +6,12 @@ lang: zh-CN
 
 # 1. 项目概览
 
+> 本手册保留 2026-09-08 独立子项目的历史布局和离线运行流程。
+> 当前 StorageStacked-Docker 的设计与完整操作入口见[根 README](../../README.md#整体设计构建与实验文档)，
+> 对应[架构](../../docs/architecture.md)、[构建](../../docs/build-run.md)、
+> [实验](../../docs/experiments.md)、[协同](../../docs/multi-device.md)和
+> [新增 XPU](../../docs/xpu-integration.md)。不要使用本手册旧锁文件管理当前内部源码。
+
 本手册对应 2026-09-08 文档与可复现性更新。仓库只保存项目增量、测试、workload 与文档；
 不保存上游源码树、编译产物、仿真输出或 trace。上游版本统一记录在
 [UPSTREAM.md](../UPSTREAM.md)，生成物由 `.gitignore` 排除。

@@ -1,6 +1,8 @@
 # 统一构建与运行环境
 
-首次配置和依赖包使用请先看[配置与交接指引](../docs/setup.md)。
+Docker 交付版首次配置请先看[构建与运行全流程](../docs/build-run.md)；原主仓库的
+依赖包使用见[配置与交接指引](../docs/setup.md)。整体设计与指标解释见
+[架构](../docs/architecture.md)、[实验分析](../docs/experiments.md)。
 
 当前五个内部模块是主仓库普通源码，外部gem5/Vortex/CoralNPU仍按sources.lock.json锁定。
 构建不再对UCIe打补丁；GPU设备源码在gem5_new/gem5int/src/dev/vortex直接维护。

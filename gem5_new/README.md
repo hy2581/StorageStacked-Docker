@@ -1,6 +1,7 @@
 > 本目录现为 StorageStacked 主仓库的一部分，直接维护设备、观察器和外部适配源码。
 > 当前默认是 CPU/GPU/NPU 经 AXI256/UCIe 到在线 mem_sim 的响应闭环，入口为根目录
-> `env/build_xpu.sh` 和 `env/run_xpu.sh`；见[统一环境](../env/README.md)。
+> `env/build_xpu.sh` 和 `env/run_xpu.sh`；见[统一环境](../env/README.md)和
+> [当前整体设计、构建、实验与接入文档](../README.md#整体设计构建与实验文档)。
 > 下文保留本模块原有离线 HETTrace 工作流说明，不能作为当前整机链路状态或安装入口。
 
 # 异构 XPU 统一 AXI4 HETTrace

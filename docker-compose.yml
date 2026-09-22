@@ -1,12 +1,18 @@
 services:
   storagestacked:
     image: ${SS_IMAGE:-storagestacked:local}
+    pull_policy: never
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
+      network: ${SS_BUILD_NETWORK:-default}
       args:
         AXI_JOBS: ${AXI_JOBS:-6}
+        HTTP_PROXY: ${HTTP_PROXY:-${http_proxy:-}}
+        HTTPS_PROXY: ${HTTPS_PROXY:-${https_proxy:-}}
+        ALL_PROXY: ${ALL_PROXY:-${all_proxy:-}}
+        NO_PROXY: ${NO_PROXY:-${no_proxy:-}}
     environment:
       SS_ROOT: /opt/StorageStacked
       SS_DEPS_ROOT: /opt/deps

@@ -1,5 +1,10 @@
 # 配置、交接与完整运行
 
+> 本页的 Git 子模块初始化与依赖包恢复针对原 `fmq03/StorageStacked` 主仓库。
+> 当前 `StorageStacked-Docker` 交付快照的源码获取、四组件准备、编译阶段与输出检查，
+> 请从[构建与运行全流程](build-run.md)进入；该快照仅有 `.gitmodules`，没有外部 gitlink，
+> 不能只执行本页的 `git submodule update` 来准备源码。
+
 本工程把CPU、Vortex GPU、CoralNPU的访存接入同一个AXI256/UCIe/在线mem_sim响应闭环。
 五个内部模块已并入主仓库；只有gem5、coralnpu、vortex-gpu/vortex及Vortex递归依赖是子模块。
 入口统一在根目录env/；protocol/是共享协议源码。

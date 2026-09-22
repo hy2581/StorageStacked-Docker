@@ -1,12 +1,17 @@
 # 开发与历史追溯
 
+当前整体设计与实施入口：[详细架构](architecture.md)、[构建运行](build-run.md)、
+[实验分析](experiments.md)、[多设备协同](multi-device.md)、[新增 XPU](xpu-integration.md)。
+下文仓库历史及子模块协作说明针对原 `fmq03/StorageStacked` 主仓库；Docker 交付快照
+的外部源码由镜像构建获取，其原生开发获取步骤见上述构建运行文档。
+
 五个内部模块作为同一系统维护，直接在主仓库创建功能分支，允许一个提交同时修改
 处理器适配、AXI、UCIe和内存接口。只有外部gem5、Vortex、CoralNPU保留子模块。
 
 ```bash
 git switch -c feature/功能名称
 # 修改对应目录，运行相关验证
-git add <实际修改的源码路径>
+git add '实际修改的源码路径'
 git commit -m "说明本次行为变化的中文提交信息"
 # 验证后在main合并；涉及完整功能的分支可以使用--no-ff保留合并记录
 ```
@@ -29,7 +34,7 @@ gem5_axi原来没有远端和首次提交，因此单独建立源码基线。
 ```bash
 git log --graph --oneline --all
 git log --oneline -- mem_sim
-git show <旧提交号>
+git show '旧提交号'
 ```
 
 原历史的文件路径仍是各库导入前的相对路径；未重写旧提交哈希。

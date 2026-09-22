@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 ARG UBUNTU_VERSION=20.04
 
 FROM ubuntu:${UBUNTU_VERSION} AS builder
@@ -25,7 +23,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
-COPY . /opt/StorageStacked
+# Copy build inputs explicitly: changing the customer README or launcher must
+# not invalidate the expensive simulator compilation layer.
+COPY env/ /opt/StorageStacked/env/
+COPY protocol/ /opt/StorageStacked/protocol/
+COPY axi2flit/ /opt/StorageStacked/axi2flit/
+COPY ucie-model/ /opt/StorageStacked/ucie-model/
+COPY gem5_axi/ /opt/StorageStacked/gem5_axi/
+COPY mem_sim/ /opt/StorageStacked/mem_sim/
+COPY gem5_new/ /opt/StorageStacked/gem5_new/
+COPY .gitignore .gitmodules /opt/StorageStacked/
 
 # The build context intentionally omits external submodule worktrees. Create a
 # small local Git repository for the monorepo sources, then fetch the exact
@@ -83,6 +90,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /opt/StorageStacked /opt/StorageStacked
 COPY --from=builder /opt/deps /opt/deps
+COPY docker/ /opt/StorageStacked/docker/
+COPY docs/ /opt/StorageStacked/docs/
+COPY README.md run.sh /opt/StorageStacked/
 COPY docker/entrypoint.sh /usr/local/bin/storagestacked
 
 RUN chmod 0755 /usr/local/bin/storagestacked \
