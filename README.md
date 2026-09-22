@@ -31,7 +31,8 @@ git pull --ff-only origin main
 git rev-parse --short HEAD
 ```
 
-确认版本为 `8fb2286` 后，再按下文导入 `ubuntu-20.04.tar` 并运行 `./run.sh setup`。
+确认已经更新到远端 `main`（可用 `git log -1 --oneline` 查看）后，再按下文导入
+`ubuntu-20.04.tar` 并运行 `./run.sh setup`。
 如果 `git pull` 提示本地有未提交修改，应先备份或处理这些修改，再继续更新。
 
 **首次准备需要联网，下载和编译可能需要数十分钟到数小时。**需要能访问 Docker Hub、Ubuntu 软件源、
